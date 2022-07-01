@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  cluster-local: "false"
+  console: "true"
+  console-authentication: internal
+  console-password: "rubble"
+  console-user: "barney"
+  edge: "false"
+  ingress: "ingress"
+  ingress-host: "cluster2.k8s.local"
+  name: cluster2
+  router-console: "true"
+  service-controller: "true"
+  service-sync: "true"
+kind: ConfigMap
+metadata:
+  name: skupper-site
