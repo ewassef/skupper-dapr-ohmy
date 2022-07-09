@@ -1,3 +1,4 @@
+# https://github.com/skupperproject/skupper/blob/master/cmd/site-controller/README.md
 apiVersion: v1
 data:
   cluster-local: "false"
@@ -6,8 +7,9 @@ data:
   console-password: "rubble"
   console-user: "barney"
   edge: "false"
-  ingress: "ingress"
-  ingress-host: "cluster2.k8s.local"
+  ingress: "nodeport"
+  ingress-host: cluster2
+  router-ingress-host: cluster2
   name: cluster2
   router-console: "true"
   service-controller: "true"

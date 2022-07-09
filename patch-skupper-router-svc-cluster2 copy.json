@@ -1,0 +1,14 @@
+{
+    "spec": {
+        "ports": [
+            {
+                "name": "inter-router",
+                "nodePort": 8080
+            },
+            {
+                "name": "edge",
+                "nodePort": 8081
+            }
+        ]
+    }
+}

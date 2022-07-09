@@ -5,10 +5,10 @@ data:
   console-authentication: internal
   console-password: "rubble"
   console-user: "barney"
-  console-ingress: "ingress"
+  console-ingress: "nodeport"
   edge: "true"
-  ingress: "ingress"
-  ingress-host: "cluster1.k8s.local"
+  ingress: "nodeport"
+  ingress-host: "cluster1"
   name: cluster1
   router-console: "true"
   service-controller: "true"
