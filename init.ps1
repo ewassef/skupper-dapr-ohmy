@@ -18,6 +18,7 @@ kubectl apply -f .\hostEntries.yaml --kubeconfig=cluster2.kubeconfig
 kubectl apply -f .\deploy-watch-all-ns.yaml --kubeconfig=cluster1.kubeconfig
 kubectl apply -f .\deploy-watch-all-ns.yaml --kubeconfig=cluster2.kubeconfig
 
+kubectl rollout status deploy/skupper-router --kubeconfig=cluster2.kubeconfig
 #patch the service using the file
 kubectl patch service skupper-router --patch-file .\patch-skupper-router-svc-cluster2.json --kubeconfig=cluster2.kubeconfig
 
@@ -28,3 +29,32 @@ kubectl apply -f .\token-request.yaml --kubeconfig=cluster2.kubeconfig
 kubectl get secret -o yaml cluster1-secret --kubeconfig=cluster2.kubeconfig > .\join-token.yaml
 #import the token to cluster1 using a replace 
 kubectl apply -f .\join-token.yaml --kubeconfig=cluster1.kubeconfig
+
+
+# At this point we are connected, lets install dapr
+helm repo update
+helm upgrade --install dapr dapr/dapr --create-namespace --kubeconfig=cluster1.kubeconfig
+helm upgrade --install dapr dapr/dapr --create-namespace --kubeconfig=cluster2.kubeconfig
+
+# clone the quickstarts .. dont worry, its in the .gitignore file
+git clone https://github.com/dapr/quickstarts.git
+ 
+
+# install the backend in cluster 1
+helm install redis bitnami/redis --kubeconfig=cluster1.kubeconfig
+kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\redis.yaml --kubeconfig=cluster1.kubeconfig
+kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\node.yaml --kubeconfig=cluster1.kubeconfig
+kubectl rollout status deploy/nodeapp --kubeconfig=cluster1.kubeconfig
+
+$pf = Start-Job -ScriptBlock { kubectl port-forward service/nodeapp 8080:80 --kubeconfig=cluster1.kubeconfig }
+curl --request POST --data "@sample.json" --header Content-Type:application/json http://localhost:8080/neworder
+$pf.StopJob()
+
+
+# install the frontend in cluster 2
+kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\python.yaml --kubeconfig=cluster2.kubeconfig
+
+#expose the services to each other
+
+kubectl annotate service/nodeapp-dapr skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig
+

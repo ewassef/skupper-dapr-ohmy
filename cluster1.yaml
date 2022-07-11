@@ -4,8 +4,7 @@ data:
   console: "true"
   console-authentication: internal
   console-password: "rubble"
-  console-user: "barney"
-  console-ingress: "nodeport"
+  console-user: "barney" 
   edge: "true"
   ingress: "nodeport"
   ingress-host: "cluster1"
