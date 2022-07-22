@@ -1,2 +1,5 @@
 
 quickstarts/
+cluster2.kubeconfig
+cluster1.kubeconfig
+join-token.yaml

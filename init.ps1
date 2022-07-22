@@ -56,5 +56,5 @@ kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\python.yaml --k
 
 #expose the services to each other
 
-kubectl annotate service/nodeapp-dapr skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig
-
+kubectl annotate service/nodeapp-dapr skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig 
+kubectl annotate service/nodeapp skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig 
