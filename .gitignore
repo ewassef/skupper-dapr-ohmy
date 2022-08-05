@@ -1,5 +1,5 @@
 
 quickstarts/
-cluster2.kubeconfig
-cluster1.kubeconfig
-join-token.yaml
+*.kubeconfig 
+join-token.yaml 
+gitops/common/*-host.yaml

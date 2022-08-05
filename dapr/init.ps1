@@ -35,7 +35,8 @@ kubectl apply -f .\join-token.yaml --kubeconfig=cluster1.kubeconfig
 helm repo update
 helm upgrade --install dapr dapr/dapr --create-namespace --kubeconfig=cluster1.kubeconfig
 helm upgrade --install dapr dapr/dapr --create-namespace --kubeconfig=cluster2.kubeconfig
-
+kubectl patch configurations/daprsystem --patch-file patch-dapr-config.json --kubeconfig=cluster1.kubeconfig
+kubectl patch configurations/daprsystem --patch-file .\patch-dapr-config.json --kubeconfig=cluster2.kubeconfig
 # clone the quickstarts .. dont worry, its in the .gitignore file
 git clone https://github.com/dapr/quickstarts.git
  
@@ -44,17 +45,15 @@ git clone https://github.com/dapr/quickstarts.git
 helm install redis bitnami/redis --kubeconfig=cluster1.kubeconfig
 kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\redis.yaml --kubeconfig=cluster1.kubeconfig
 kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\node.yaml --kubeconfig=cluster1.kubeconfig
-kubectl rollout status deploy/nodeapp --kubeconfig=cluster1.kubeconfig
-
-$pf = Start-Job -ScriptBlock { kubectl port-forward service/nodeapp 8080:80 --kubeconfig=cluster1.kubeconfig }
-curl --request POST --data "@sample.json" --header Content-Type:application/json http://localhost:8080/neworder
-$pf.StopJob()
-
+kubectl annotate deploy/nodeapp dapr.io/sidecar-listen-addresses="0.0.0.0" --kubeconfig=cluster1.kubeconfig
 
 # install the frontend in cluster 2
 kubectl apply -f .\quickstarts\tutorials\hello-kubernetes\deploy\python.yaml --kubeconfig=cluster2.kubeconfig
 
-#expose the services to each other
+kubectl rollout status deploy/nodeapp --kubeconfig=cluster1.kubeconfig
+kubectl rollout status deploy/pythonapp --kubeconfig=cluster2.kubeconfig
 
-kubectl annotate service/nodeapp-dapr skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig 
-kubectl annotate service/nodeapp skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig 
+#expose the services to each other
+ 
+kubectl annotate service/nodeapp-dapr skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig --overwrite=true
+kubectl annotate service/nodeapp skupper.io/proxy="tcp" --kubeconfig=cluster1.kubeconfig  --overwrite=true

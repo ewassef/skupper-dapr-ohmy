@@ -1,0 +1,6 @@
+commonLabels:
+  operator-element: crd
+resources:
+- clusterpools_demo_ewassef_dev.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

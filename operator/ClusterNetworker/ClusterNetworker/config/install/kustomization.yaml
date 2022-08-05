@@ -1,0 +1,15 @@
+namespace: clusternetworker-system
+namePrefix: clusternetworker-
+commonLabels:
+  operator: clusternetworker
+resources:
+  - ./namespace.yaml
+  - ../crds
+  - ../rbac
+  - ../operator
+images:
+  - name: operator
+    newName: ewassef/clusternetworker
+    newTag: latest
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
