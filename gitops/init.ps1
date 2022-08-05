@@ -54,6 +54,8 @@ function CreateCluster {
         }
     }
     $yaml = ConvertTo-Yaml $hostEntry | Out-File -FilePath .\gitops\common\$clusterName-host.yaml
+    New-Item -Path .\gitops\$clusterName -ItemType Directory -Force
+    New-Item -Path .\gitops\$clusterName\.gitkeep -ItemType File -Force
     $kubeconfig = [System.IO.FileInfo]".\$clusterName.kubeconfig"
     SetupFlux $clusterName $kubeconfig
 }

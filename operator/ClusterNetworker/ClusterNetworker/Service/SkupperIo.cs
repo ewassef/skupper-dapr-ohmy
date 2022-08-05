@@ -19,19 +19,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ClusterNetworker.Service
 {
-    public class MockStore : ITokenStore
-    {
-        public Task<V1Secret?> RetrieveTokenAsync(string clusterPoolName)
-        {
-            return Task.FromResult((V1Secret)null);
-        }
-
-        public async Task<V1Secret> UpsertTokenAsync(string clusterPoolName)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
     public class SkupperIo : INetworkingHandler
     {
         private const string Namespace = "skupper-site-controller";
@@ -138,9 +125,9 @@ namespace ClusterNetworker.Service
                 {
                     await Task.Delay(1000);
                     token = await _client.ApiClient.ReadNamespacedSecretAsync($"{entity.Name()}-token", Namespace);
-                } while (token.Data?.Count == 0);
+                } while (token.Data == null || token.Data?.Count == 0);
 
-                await _tokenStore.UpsertTokenAsync(entity.Name());
+                await _tokenStore.UpsertTokenAsync(entity.Name(), token);
             }
             else
             {

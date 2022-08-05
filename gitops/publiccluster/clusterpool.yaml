@@ -1,0 +1,9 @@
+apiVersion: demo.ewassef.dev/v1
+kind: ClusterPool
+metadata:
+  name: vslive
+spec:
+  clusterName: publiccluster
+  nodeportConfigurations:
+    interRouterSvc: 30080
+    edgeSvc: 30081

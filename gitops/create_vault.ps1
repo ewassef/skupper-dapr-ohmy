@@ -1,0 +1,1 @@
+docker run --cap-add=IPC_LOCK -d -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=shh-vslive-secret' --name=dev-vault vault

@@ -2,4 +2,3 @@
 quickstarts/
 *.kubeconfig 
 join-token.yaml 
-gitops/common/*-host.yaml

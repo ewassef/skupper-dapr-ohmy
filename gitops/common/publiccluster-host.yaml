@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: publiccluster
+spec:
+  externalName: host.docker.internal
+  type: ExternalName
+
