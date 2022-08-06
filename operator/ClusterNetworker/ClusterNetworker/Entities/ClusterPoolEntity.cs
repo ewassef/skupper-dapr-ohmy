@@ -13,9 +13,18 @@ namespace ClusterNetworker.Entities
             LoadBalancer
         }
 
+        public enum State
+        {
+            New,
+            InstallationInitialized,
+            Patching,
+            Registered
+        }
+
         public class ClusterPoolEntitySpec
         {
             public string ClusterName { get; set; }
+            public DeploymentExposed[] DeploymentsExposed { get; set; }
             public ExposureType ExposureType { get; set; } = ExposureType.NodePort;
 
             [AdditionalPrinterColumn(Name = "Has External Access")]
@@ -28,6 +37,12 @@ namespace ClusterNetworker.Entities
                 public int EdgeSvc { get; set; }
                 public int InterRouterSvc { get; set; }
             }
+
+            public class DeploymentExposed
+            {
+                public string Name { get; set; }
+                public string Namespace { get; set; }
+            }
         }
 
         public class ClusterPoolEntityStatus
@@ -35,8 +50,14 @@ namespace ClusterNetworker.Entities
             [AdditionalPrinterColumn(Name = "Connected Clusters")]
             public int NumberOfClusters { get; set; }
 
-            [AdditionalPrinterColumn(Name = "Exposed Services")]
+            [AdditionalPrinterColumn(Name = "Local Exposed Services")]
             public int NumberOfExposedServices { get; set; }
+
+            [AdditionalPrinterColumn(Name = "Total Exposed Services")]
+            public int OverallNumberOfExposedServices { get; set; }
+
+            [AdditionalPrinterColumn(Name = "State")]
+            public State State { get; set; } = State.New;
         }
     }
 }

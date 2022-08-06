@@ -9,20 +9,23 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using ClusterNetworker.Service;
+using DotnetKubernetesClient;
 
 namespace ClusterNetworker.Controller
 {
     [EntityRbac(typeof(ClusterPoolEntity), Verbs = RbacVerb.All)]
     public class ClusterPoolController : IResourceController<ClusterPoolEntity>
     {
+        private readonly IKubernetesClient _client;
         private readonly IFinalizerManager<ClusterPoolEntity> _finalizerManager;
         private readonly ILogger<ClusterPoolController> _logger;
         private readonly INetworkingHandler _networkingHandler;
 
-        public ClusterPoolController(ILogger<ClusterPoolController> logger, INetworkingHandler networkingHandler, IFinalizerManager<ClusterPoolEntity> finalizerManager)
+        public ClusterPoolController(ILogger<ClusterPoolController> logger, INetworkingHandler networkingHandler, IKubernetesClient client, IFinalizerManager<ClusterPoolEntity> finalizerManager)
         {
             _logger = logger;
             _networkingHandler = networkingHandler;
+            _client = client;
             _finalizerManager = finalizerManager;
         }
 
@@ -36,9 +39,19 @@ namespace ClusterNetworker.Controller
         public async Task<ResourceControllerResult?> ReconcileAsync(ClusterPoolEntity entity)
         {
             _logger.LogInformation($"entity {entity.Name()} called {nameof(ReconcileAsync)}.");
-            await _finalizerManager.RegisterFinalizerAsync<ClusterPoolFinalizer>(entity);
-            await _networkingHandler.InitiateProductAsync(entity);
-            return ResourceControllerResult.RequeueEvent(TimeSpan.FromSeconds(5));
+
+            Task<ResourceControllerResult?> t = entity.Status.State switch
+            {
+                ClusterPoolEntity.State.New => NewAsync(entity),
+                ClusterPoolEntity.State.InstallationInitialized => InstallationInitializedAsync(entity),
+                ClusterPoolEntity.State.Patching => PatchingAsync(entity),
+                ClusterPoolEntity.State.Registered => RegisteredAsync(entity),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            var result = await t;
+            await _client.UpdateStatus(entity);
+            return result;
         }
 
         public Task StatusModifiedAsync(ClusterPoolEntity entity)
@@ -46,6 +59,29 @@ namespace ClusterNetworker.Controller
             _logger.LogInformation($"entity {entity.Name()} called {nameof(StatusModifiedAsync)}.");
 
             return Task.CompletedTask;
+        }
+
+        private async Task<ResourceControllerResult?> InstallationInitializedAsync(ClusterPoolEntity entity)
+        {
+            await _networkingHandler.InitiateProductAsync(entity);
+            return ResourceControllerResult.RequeueEvent(TimeSpan.FromSeconds(60));
+        }
+
+        private async Task<ResourceControllerResult> NewAsync(ClusterPoolEntity entity)
+        {
+            await _finalizerManager.RegisterFinalizerAsync<ClusterPoolFinalizer>(entity);
+            return ResourceControllerResult.RequeueEvent(TimeSpan.FromSeconds(5));
+        }
+
+        private async Task<ResourceControllerResult> PatchingAsync(ClusterPoolEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task<ResourceControllerResult> RegisteredAsync(ClusterPoolEntity entity)
+        {
+            await _networkingHandler.MonitorAsync(entity);
+            return ResourceControllerResult.RequeueEvent(TimeSpan.FromSeconds(60));
         }
     }
 }

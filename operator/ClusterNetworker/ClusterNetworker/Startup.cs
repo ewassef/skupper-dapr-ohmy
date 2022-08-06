@@ -1,3 +1,4 @@
+using System;
 using ClusterNetworker.Service;
 using KubeOps.Operator;
 using Microsoft.AspNetCore.Builder;
@@ -30,7 +31,10 @@ namespace ClusterNetworker
                 .AddScoped<IVaultClient>(provider => new VaultClient(new VaultClientSettings(Configuration["Vault:Address"],
                     new TokenAuthMethodInfo(Configuration["Vault:Token"]))))
                 .AddHttpClient()
-                .AddKubernetesOperator();
+                .AddKubernetesOperator(options =>
+                {
+                    options.WatcherHttpTimeout = (ushort)TimeSpan.FromMinutes(5).TotalSeconds;
+                });
         }
     }
 }

@@ -16,12 +16,23 @@ using k8s.Models;
 using KubeOps.Operator.Events;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace ClusterNetworker.Service
 {
     public class SkupperIo : INetworkingHandler
     {
         private const string Namespace = "skupper-site-controller";
+
+        private const string patchStr = @"
+{
+    ""metadata"": {
+        ""annotations"": {
+            ""skupper.io/proxy"": ""http""
+        }
+    }
+}";
+
         private readonly IKubernetesClient _client;
         private readonly IEventManager _eventManager;
         private readonly ILogger<SkupperIo> _logger;
@@ -93,12 +104,18 @@ namespace ClusterNetworker.Service
                 }
 
                 // When using kind, be sure to patch the svc to point to the right nodeport
-                if (entity.Spec.ExposureType == ClusterPoolEntity.ExposureType.NodePort)
+                if (entity.Spec.HasExternalAccess && entity.Spec.ExposureType == ClusterPoolEntity.ExposureType.NodePort)
                 {
+                    while ((await _client.ApiClient.ListNamespacedServiceAsync(Namespace)).Items
+                           .All(x => x.Name() != "skupper-router"))
+                    {
+                        await Task.Delay(5000);
+                    }
+
                     var svc = await _client.ApiClient.ReadNamespacedServiceAsync("skupper-router", Namespace);
                     foreach (var v1ServicePort in svc.Spec.Ports)
                     {
-                        var nodeportConfigurationsInterRouterSvc = v1ServicePort.Name switch
+                        _ = v1ServicePort.Name switch
                         {
                             "inter-router" => v1ServicePort.NodePort =
                                 entity.Spec.NodeportConfigurations.InterRouterSvc,
@@ -109,9 +126,28 @@ namespace ClusterNetworker.Service
 
                     await _client.ApiClient.ReplaceNamespacedServiceAsync(svc, svc.Name(), svc.Namespace());
                 }
-                return; // come back later
-            }
 
+                entity.Status.State = ClusterPoolEntity.State.Patching;
+            }
+        }
+
+        public async Task MonitorAsync(ClusterPoolEntity entity)
+        {
+            if (!entity
+                .Spec.DeploymentsExposed.Any())
+                return;
+            var deployments = await _client.ApiClient.ListDeploymentForAllNamespacesAsync();
+            foreach (var deploymentExposed in entity.Spec.DeploymentsExposed)
+            {
+                var dep = deployments.Items.FirstOrDefault(x =>
+                    x.Namespace() == deploymentExposed.Namespace && x.Name() == deploymentExposed.Name);
+
+                if (dep == null) continue; // log this
+            }
+        }
+
+        public async Task PatchProductAsync(ClusterPoolEntity entity)
+        {
             // things are ready, either create a new join token and broadcast it, OR pull the pool
             // token from secrets storage
 
@@ -133,11 +169,8 @@ namespace ClusterNetworker.Service
             {
                 await _client.ApiClient.CreateNamespacedSecretAsync(token, Namespace);
             }
-        }
 
-        public async Task<bool> IsCompletedAsync(ClusterPoolEntity entity)
-        {
-            throw new NotImplementedException();
+            entity.Status.State = ClusterPoolEntity.State.Registered;
         }
 
         private async Task<bool> IsSkuppperInstalledAndReady()
