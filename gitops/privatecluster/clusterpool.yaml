@@ -3,7 +3,5 @@ kind: ClusterPool
 metadata:
   name: vslive
 spec:
-  clusterName: publiccluster
-  nodeportConfigurations:
-    interRouterSvc: 30080
-    edgeSvc: 30081
+  clusterName: privatecluster
+  hasExternalAccess: false

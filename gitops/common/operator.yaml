@@ -8,5 +8,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: common
-  path: ./operator/ClusterNetworker/ClusterNetworker/config
+  path: ./operator/ClusterNetworker/ClusterNetworker/config/install
   prune: true
