@@ -5,10 +5,30 @@ metadata:
 rules:
 - apiGroups:
   - demo.ewassef.dev
+  - ''
+  - rbac.authorization.k8s.io
   - coordination.k8s.io
   resources:
   - clusterpools
+  - namespaces
+  - secrets
+  - configmaps
+  - serviceaccounts
+  - clusterroles
+  - clusterrolebindings
   - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - '*'
+- apiGroups:
+  - ''
+  resources:
+  - services
   verbs:
   - '*'
 - apiGroups:
@@ -21,10 +41,8 @@ rules:
   - list
   - update
 - apiGroups:
-  - ''
   - admissionregistration.k8s.io
   resources:
-  - services
   - validatingwebhookconfigurations
   - mutatingwebhookconfigurations
   verbs:
@@ -33,13 +51,6 @@ rules:
   - patch
   - update
   - delete
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
 - apiGroups:
   - demo.ewassef.dev
   resources:
@@ -51,7 +62,7 @@ rules:
 - apiGroups:
   - ''
   resources:
-  - services/status
+  - namespaces/status
   verbs:
   - get
   - patch
@@ -60,6 +71,14 @@ rules:
   - apps
   resources:
   - deployments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services/status
   verbs:
   - get
   - patch

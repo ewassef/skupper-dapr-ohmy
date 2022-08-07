@@ -14,6 +14,15 @@ using DotnetKubernetesClient;
 namespace ClusterNetworker.Controller
 {
     [EntityRbac(typeof(ClusterPoolEntity), Verbs = RbacVerb.All)]
+    [EntityRbac(typeof(V1Namespace),
+        typeof(V1Secret),
+        typeof(V1ConfigMap),
+        typeof(V1ServiceAccount),
+        typeof(V1Deployment),
+        typeof(V1ClusterRole),
+        typeof(V1ClusterRoleBinding),
+        typeof(V1Service),
+        Verbs = RbacVerb.All)]
     public class ClusterPoolController : IResourceController<ClusterPoolEntity>
     {
         private readonly IKubernetesClient _client;
