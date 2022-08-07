@@ -22,7 +22,8 @@ namespace ClusterNetworker.Controller
         typeof(V1ClusterRole),
         typeof(V1ClusterRoleBinding),
         typeof(V1Service),
-        Verbs = RbacVerb.All)]
+        typeof(V1Pod),
+        Verbs = RbacVerb.All)] // Dont do this, add only the rbac you need
     public class ClusterPoolController : IResourceController<ClusterPoolEntity>
     {
         private readonly IKubernetesClient _client;

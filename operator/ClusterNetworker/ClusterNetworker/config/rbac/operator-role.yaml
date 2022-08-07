@@ -16,6 +16,7 @@ rules:
   - serviceaccounts
   - clusterroles
   - clusterrolebindings
+  - pods
   - leases
   verbs:
   - '*'
@@ -79,6 +80,14 @@ rules:
   - ''
   resources:
   - services/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - pods/status
   verbs:
   - get
   - patch
