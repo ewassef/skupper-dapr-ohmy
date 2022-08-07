@@ -1,4 +1,4 @@
-namespace: clusternetworker-system
+namespace: vslive
 namePrefix: clusternetworker-
 commonLabels:
   operator: clusternetworker

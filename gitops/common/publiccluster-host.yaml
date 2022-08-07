@@ -6,3 +6,4 @@ metadata:
 spec:
   type: ExternalName
   externalName: host.docker.internal
+
