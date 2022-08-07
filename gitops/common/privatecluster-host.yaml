@@ -1,9 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: skupper-site-controller
+  namespace: vslive
   name: privatecluster
 spec:
   type: ExternalName
   externalName: host.docker.internal
-
