@@ -7,6 +7,9 @@ namespace ClusterNetworker.Service
     {
         Task InitiateProductAsync(ClusterPoolEntity entity);
 
-        Task<bool> IsCompletedAsync(ClusterPoolEntity entity);
+        Task PatchProductAsync(ClusterPoolEntity entity);
+
+        Task MonitorAsync(ClusterPoolEntity entity);
+         
     }
 }

@@ -47,7 +47,10 @@ function CreateCluster {
     $hostEntry = [PsCustomObject]@{
         apiVersion = 'v1'
         kind       = 'Service'
-        metadata   = @{name = $clusterName }
+        metadata   = @{
+            name      = $clusterName 
+            namespace = 'vslive'
+        }
         spec       = @{
             type         = 'ExternalName'
             externalName = 'host.docker.internal'

@@ -33,8 +33,7 @@ namespace ClusterNetworker.Service
             var name = token.Name();
             var namespaceVal = token.Namespace();
             var labels = token.Labels();
-            token.Metadata = new V1ObjectMeta(name: name, namespaceProperty: namespaceVal, labels: labels);
-            token.StringData = token.Data.ToDictionary(x => x.Key, y => System.Convert.ToBase64String((byte[]) y.Value));
+            token.Metadata = new V1ObjectMeta(name: name, namespaceProperty: namespaceVal, annotations: token.Annotations(), labels: labels);
             await _client.V1.Secrets.KeyValue.V2.WriteSecretAsync($"{clusterPoolName}", token, null, "secret");
         }
     }

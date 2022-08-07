@@ -19,9 +19,18 @@ spec:
       type: integer
     - format: int32
       jsonPath: .status.numberOfExposedServices
-      name: Exposed Services
+      name: Local Exposed Services
       priority: 0
       type: integer
+    - format: int32
+      jsonPath: .status.overallNumberOfExposedServices
+      name: Total Exposed Services
+      priority: 0
+      type: integer
+    - jsonPath: .status.state
+      name: State
+      priority: 0
+      type: string
     - jsonPath: .spec.hasExternalAccess
       name: Has External Access
       priority: 0
@@ -39,12 +48,31 @@ spec:
               numberOfExposedServices:
                 format: int32
                 type: integer
+              overallNumberOfExposedServices:
+                format: int32
+                type: integer
+              state:
+                enum:
+                - New
+                - InstallationInitialized
+                - Patching
+                - Registered
+                type: string
             type: object
           spec:
             description: Specification of the kubernetes object.
             properties:
               clusterName:
                 type: string
+              deploymentsExposed:
+                items:
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  type: object
+                type: array
               exposureType:
                 enum:
                 - NodePort

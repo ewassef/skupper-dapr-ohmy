@@ -40,7 +40,7 @@ namespace ClusterNetworker.Controller
         {
             _logger.LogInformation($"entity {entity.Name()} called {nameof(ReconcileAsync)}.");
 
-            Task<ResourceControllerResult?> t = entity.Status.State switch
+            Task<ResourceControllerResult> t = entity.Status.State switch
             {
                 ClusterPoolEntity.State.New => NewAsync(entity),
                 ClusterPoolEntity.State.InstallationInitialized => InstallationInitializedAsync(entity),
@@ -50,7 +50,7 @@ namespace ClusterNetworker.Controller
             };
 
             var result = await t;
-            await _client.UpdateStatus(entity);
+
             return result;
         }
 
@@ -70,12 +70,16 @@ namespace ClusterNetworker.Controller
         private async Task<ResourceControllerResult> NewAsync(ClusterPoolEntity entity)
         {
             await _finalizerManager.RegisterFinalizerAsync<ClusterPoolFinalizer>(entity);
+            entity = await _client.Get<ClusterPoolEntity>(entity.Name(), entity.Namespace());
+            entity.Status.State = ClusterPoolEntity.State.InstallationInitialized;
+            await _client.UpdateStatus(entity);
             return ResourceControllerResult.RequeueEvent(TimeSpan.FromSeconds(5));
         }
 
         private async Task<ResourceControllerResult> PatchingAsync(ClusterPoolEntity entity)
         {
-            throw new NotImplementedException();
+            await _networkingHandler.PatchProductAsync(entity);
+            return ResourceControllerResult.RequeueEvent(TimeSpan.FromSeconds(10));
         }
 
         private async Task<ResourceControllerResult> RegisteredAsync(ClusterPoolEntity entity)

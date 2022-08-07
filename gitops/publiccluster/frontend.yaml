@@ -4,6 +4,7 @@ metadata:
   labels:
     app: frontend
   name: frontend
+  namespace: vslive
 spec:
   replicas: 1
   selector:
@@ -17,3 +18,5 @@ spec:
       containers:
         - image: quay.io/skupper/hello-world-frontend
           name: hello-world-frontend
+          ports:
+            - containerPort: 8080
