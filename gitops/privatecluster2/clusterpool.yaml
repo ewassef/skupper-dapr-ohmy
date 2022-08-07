@@ -1,0 +1,10 @@
+apiVersion: demo.ewassef.dev/v1
+kind: ClusterPool
+metadata:
+  name: vslive
+spec:
+  clusterName: privatecluster
+  hasExternalAccess: false
+  deploymentsExposed:
+    - name: backend
+      namespace: default
