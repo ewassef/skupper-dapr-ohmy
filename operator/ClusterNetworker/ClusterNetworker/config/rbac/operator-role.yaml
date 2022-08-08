@@ -98,4 +98,4 @@ rules:
   resources:
   - pods/exec
   verbs:
-  - create
+  - '*'

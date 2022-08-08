@@ -24,7 +24,7 @@ namespace ClusterNetworker.Controller
         typeof(V1Service),
         typeof(V1Pod),
         Verbs = RbacVerb.All)] // Dont do this, add only the rbac you need
-    [GenericRbac(Groups = new[] { "" }, Resources = new[] { "pods/exec" }, Verbs = RbacVerb.Create)]
+    [GenericRbac(Groups = new[] { "" }, Resources = new[] { "pods/exec" }, Verbs = RbacVerb.All)]
     public class ClusterPoolController : IResourceController<ClusterPoolEntity>
     {
         private readonly IKubernetesClient _client;
