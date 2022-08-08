@@ -92,3 +92,10 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - ''
+  nonResourceURLs: []
+  resources:
+  - pods/exec
+  verbs:
+  - create
