@@ -8,4 +8,4 @@ spec:
   hasExternalAccess: false
   deploymentsExposed:
     - name: backend
-      namespace: default
+      namespace: vslive
