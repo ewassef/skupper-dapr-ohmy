@@ -33,14 +33,28 @@ function CreateCluster {
             @{
                 role              = 'control-plane'
                 extraPortMappings = $extraPortMappings
+            },
+            @{
+                role              = 'worker'
+            },
+            @{
+                role              = 'worker'
+            },
+            @{
+                role              = 'worker'
             }
         ) 
     }   
     $TempFile = New-TemporaryFile
     $yaml = ConvertTo-Yaml $obj | Out-File -FilePath $TempFile
     
+    if (kind get clusters | Where-Object { $_ -eq $clusterName }) {
+        Write-Host "Cluster $clusterName already exists"
+    }
+    else{
+        kind create cluster --config $TempFile.FullName
+    }
     
-    kind create cluster --config $TempFile.FullName
     kind export kubeconfig --name $clusterName --kubeconfig=.\$clusterName.kubeconfig
 
 
@@ -56,10 +70,10 @@ function CreateCluster {
             externalName = 'host.docker.internal'
         }
     }
-    $yaml = ConvertTo-Yaml $hostEntry | Out-File -FilePath .\gitops\common\$clusterName-host.yaml
-    New-Item -Path .\gitops\$clusterName -ItemType Directory -Force
-    New-Item -Path .\gitops\$clusterName\.gitkeep -ItemType File -Force
-    $kubeconfig = [System.IO.FileInfo]".\$clusterName.kubeconfig"
+    $yaml = ConvertTo-Yaml $hostEntry | Out-File -FilePath .\$clusterName-host.yaml
+    New-Item -Path .\$clusterName -ItemType Directory -Force
+    New-Item -Path .\$clusterName\.gitkeep -ItemType File -Force
+    $kubeconfig = [System.IO.FileInfo] "$PWD\$clusterName.kubeconfig"
     SetupFlux $clusterName $kubeconfig
 }
 
@@ -75,7 +89,7 @@ function SetupFlux {
         [System.IO.FileInfo]
         $kubeconfig
     )
-
+    Write-Host $kubeconfig
     #  we will install flux on the cluster using the kubeconfig passed
     kubectl apply -f https://github.com/fluxcd/flux2/releases/download/v0.31.5/install.yaml --kubeconfig $kubeconfig.FullName
 
@@ -137,7 +151,7 @@ function SetupFlux {
                 kind = 'GitRepository'
                 name = 'common'
             }
-            path      = './gitops/' + $clusterName
+            path      = './gitops/$($clusterName)'
             prune     = $true
         }
     } 
